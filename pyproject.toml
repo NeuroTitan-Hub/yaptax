@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "langtax"
+version = "0.1.0"
+description = "Measure the language tax in your AI prompts: how many more tokens your non-English users cost."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "NeuroTitan Labs" }]
+requires-python = ">=3.9"
+dependencies = ["tiktoken>=0.7"]
+keywords = ["llm", "tokens", "tokenizer", "multilingual", "cost"]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Environment :: Console",
+]
+
+[project.optional-dependencies]
+hf = ["tokenizers>=0.19", "huggingface_hub>=0.23"]
+test = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://neurotitan.in/cost"
+
+[project.scripts]
+langtax = "langtax.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+langtax = ["data/*.json"]
