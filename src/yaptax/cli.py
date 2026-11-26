@@ -1,9 +1,9 @@
-"""langtax: measure the language tax in your own prompts.
+"""yaptax: measure the language tax in your own prompts.
 
-    langtax measure prompts.jsonl                 tokens per language, and how many are language tax
-    langtax measure chats.csv --lang-field lang   use your own language labels
-    langtax measure hindi.txt --lang hi --spend 2000
-    langtax ratios Tamil                          the Index's ratios for one language
+    yaptax measure prompts.jsonl                 tokens per language, and how many are language tax
+    yaptax measure chats.csv --lang-field lang   use your own language labels
+    yaptax measure hindi.txt --lang hi --spend 2000
+    yaptax ratios Tamil                          the Index's ratios for one language
 
 Everything runs on your machine. Your text is never uploaded.
 """
@@ -163,7 +163,7 @@ def measure(records: Iterable[tuple[str, str | None]], toks: list[str], force_la
             "extra_tokens": round(extra),
             "tax_share": (extra / v["tokens"]) if v["tokens"] else 0.0,
         }
-    return {"langtax": __version__, "index": index.load()["version"], "languages": rows, "summary": summary,
+    return {"yaptax": __version__, "index": index.load()["version"], "languages": rows, "summary": summary,
             "unrecognised_labels": sorted(bad_labels)}
 
 
@@ -247,8 +247,8 @@ def print_ratios(lang: index.Language, out=None) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="langtax", description="Measure the language tax in your own AI prompts.")
-    ap.add_argument("--version", action="version", version=f"langtax {__version__}")
+    ap = argparse.ArgumentParser(prog="yaptax", description="Measure the language tax in your own AI prompts.")
+    ap.add_argument("--version", action="version", version=f"yaptax {__version__}")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     m = sub.add_parser("measure", help="count tokens per language in a file of prompts")
@@ -275,10 +275,10 @@ def main(argv: list[str] | None = None) -> int:
         toks = [t.strip() for t in args.tokenizers.split(",") if t.strip()]
         res = measure(read_records(args.file, args.text_field, args.lang_field), toks, args.lang)
     except (KeyError, tokenizers.TokenizerUnavailable, FileNotFoundError) as e:
-        print(f"langtax: {e.args[0] if e.args else e}", file=sys.stderr)
+        print(f"yaptax: {e.args[0] if e.args else e}", file=sys.stderr)
         return 2
     if not res["languages"]:
-        print("langtax: no text found in the input", file=sys.stderr)
+        print("yaptax: no text found in the input", file=sys.stderr)
         return 1
     if args.json:
         json.dump(res, sys.stdout, ensure_ascii=False, indent=2)

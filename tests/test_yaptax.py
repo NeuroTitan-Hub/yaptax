@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 import tiktoken
 
-from langtax import cli, detect, index
+from yaptax import cli, detect, index
 
 EXAMPLE = Path(__file__).resolve().parents[1] / "examples" / "support.jsonl"
 

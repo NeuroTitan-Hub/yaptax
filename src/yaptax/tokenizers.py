@@ -1,5 +1,5 @@
 """Token counters. OpenAI's tokenizers come from tiktoken. Open-model tokenizers are optional:
-they need `pip install langtax[hf]` and are fetched from Hugging Face at the exact revisions
+they need `pip install yaptax[hf]` and are fetched from Hugging Face at the exact revisions
 the Index was measured with, so your counts and the Index use the same files."""
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ def counter(tok_id: str) -> Callable[[str], int]:
             from huggingface_hub import hf_hub_download
             from tokenizers import Tokenizer
         except ImportError as e:
-            raise TokenizerUnavailable(f"{tok_id} needs: pip install 'langtax[hf]'") from e
+            raise TokenizerUnavailable(f"{tok_id} needs: pip install 'yaptax[hf]'") from e
         repo, rev = HF[tok_id]
         try:
             path = hf_hub_download(repo, "tokenizer.json", revision=rev)

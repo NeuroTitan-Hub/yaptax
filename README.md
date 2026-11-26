@@ -1,12 +1,14 @@
-# langtax
+# yaptax
 
-**Measure the language tax in your AI prompts.** The same meaning takes more tokens outside English, and you pay per token. `langtax` counts your own prompts per language, on the tokenizers your models use, and tells you how many of those tokens English would not need.
+*Every language at English price.* (Formerly `langtax`.)
+
+**Measure the language tax in your AI prompts.** The same meaning takes more tokens outside English, and you pay per token. `yaptax` counts your own prompts per language, on the tokenizers your models use, and tells you how many of those tokens English would not need.
 
 Everything runs on your machine. Your text is never uploaded.
 
 ```
-pip install langtax          # once released; until then: pip install git+https://github.com/NeuroTitan-Hub/langtax
-langtax measure prompts.jsonl
+pip install yaptax          # once released; until then: pip install git+https://github.com/NeuroTitan-Hub/yaptax
+yaptax measure prompts.jsonl
 ```
 
 ```
@@ -27,12 +29,12 @@ That is `examples/support.jsonl`, ten short customer-support messages.
 
 | Command | What it does |
 |---|---|
-| `langtax measure FILE` | Tokens per language in a file, and how many are language tax |
-| `langtax measure FILE --spend 2000` | Also shows the tax in money for a monthly spend |
-| `langtax measure FILE --lang hi` | Treat every record as one language |
-| `langtax measure FILE --tokenizers o200k,qwen3` | Choose tokenizers (see below) |
-| `langtax measure FILE --json` | Machine-readable output |
-| `langtax ratios Tamil` | The Index's ratios for one language, on all 8 tokenizers |
+| `yaptax measure FILE` | Tokens per language in a file, and how many are language tax |
+| `yaptax measure FILE --spend 2000` | Also shows the tax in money for a monthly spend |
+| `yaptax measure FILE --lang hi` | Treat every record as one language |
+| `yaptax measure FILE --tokenizers o200k,qwen3` | Choose tokenizers (see below) |
+| `yaptax measure FILE --json` | Machine-readable output |
+| `yaptax ratios Tamil` | The Index's ratios for one language, on all 8 tokenizers |
 
 **Input:** `.jsonl`, `.json`, `.csv`, `.tsv`, or plain text with one prompt per line (`-` reads stdin).
 - Text is taken from a `text`, `prompt`, `content`, `input`, `message`, `query` or `question` field, or from chat `messages`. Use `--text-field` for another name.
@@ -47,15 +49,15 @@ That is `examples/support.jsonl`, ten short customer-support messages.
 | `cl100k` | GPT-4, GPT-3.5 | built in |
 | `gpt2` | GPT-2 | built in |
 | `utf8-bytes` | byte-level models | built in |
-| `qwen3`, `deepseek-v3`, `mistral-nemo`, `bloom` | those open models | `pip install 'langtax[hf]'`; fetched from Hugging Face at the exact revisions the Index used |
+| `qwen3`, `deepseek-v3`, `mistral-nemo`, `bloom` | those open models | `pip install 'yaptax[hf]'`; fetched from Hugging Face at the exact revisions the Index used |
 
 Anthropic and Google do not publish their tokenizers as files, so they are not here yet.
 
 ## How "extra tokens" is computed
 
-For each language, langtax divides your token count by that language's ratio to English in the [Language Cost Index](https://neurotitan.in/cost): the same 1,012 FLORES-200 sentences, measured in 204 languages on 8 tokenizers. The difference is the language tax. It is an average, so a single short text can differ.
+For each language, yaptax divides your token count by that language's ratio to English in the [Language Cost Index](https://neurotitan.in/cost): the same 1,012 FLORES-200 sentences, measured in 204 languages on 8 tokenizers. The difference is the language tax. It is an average, so a single short text can differ.
 
-**Checked:** on FLORES-200 devtest, `langtax measure` gives exactly the token totals published with the Index for Hindi, Tamil and English on o200k, cl100k, Qwen3 and BLOOM.
+**Checked:** on FLORES-200 devtest, `yaptax measure` gives exactly the token totals published with the Index for Hindi, Tamil and English on o200k, cl100k, Qwen3 and BLOOM.
 
 **What it does not tell you:** fewer tokens is not the same as a cheaper or better model. Prices per token differ between models, and so does answer quality in each language. Measuring those on your own traffic is what our Language Cost Audit does: write to the address on [neurotitan.in](https://neurotitan.in).
 

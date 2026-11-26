@@ -1,4 +1,4 @@
-"""The Language Cost Index v0 data bundled with langtax, and language-code lookup."""
+"""The Language Cost Index v0 data bundled with yaptax, and language-code lookup."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ class Language:
 
 @lru_cache(maxsize=1)
 def load() -> dict:
-    with resources.files("langtax").joinpath("data/index-v0.json").open(encoding="utf-8") as f:
+    with resources.files("yaptax").joinpath("data/index-v0.json").open(encoding="utf-8") as f:
         return json.load(f)
 
 
