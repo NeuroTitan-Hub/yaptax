@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,13 +7,13 @@ name = "yaptax"
 version = "0.2.0"
 description = "Measure the language tax in your AI prompts: how many more tokens your non-English users cost."
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "NeuroTitan Labs" }]
 requires-python = ">=3.9"
 dependencies = ["tiktoken>=0.7"]
 keywords = ["llm", "tokens", "tokenizer", "multilingual", "cost"]
 classifiers = [
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Environment :: Console",
 ]
