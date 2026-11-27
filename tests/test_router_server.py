@@ -115,3 +115,13 @@ async def test_models_stats_and_dashboard():
 @pytest.fixture
 def anyio_backend():
     return "asyncio"
+
+
+def test_answer_text_counts_reasoning_for_thinking_models():
+    from yaptax.router.server import _answer_text
+
+    data = {"choices": [{"message": {"content": "", "reasoning": "thinking about it"}}]}
+    assert _answer_text(data) == "thinking about it"
+    data = {"choices": [{"message": {"content": "answer", "reasoning": "first"}}]}
+    assert _answer_text(data) == "first\nanswer"
+

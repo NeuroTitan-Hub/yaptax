@@ -83,7 +83,8 @@
     <p class="note">
       Savings are measured against your baseline model (<span id="baseline">–</span>): what each request would have cost
       there, with its answer converted to the baseline's tokenizer using the Language Cost Index ratios. Costs use the
-      prices in your config. <span id="usage-note"></span> No prompt or answer text is stored.
+      prices in your config. Failed attempts include ones the router rescued by falling back to the baseline, and
+      client retries. <span id="usage-note"></span> No prompt or answer text is stored.
     </p>
   </section>
 </div>
@@ -106,7 +107,7 @@
     document.getElementById("k-saved").textContent = usd(s.saved);
     document.getElementById("k-pct").textContent = pct(s.saved_pct);
     document.getElementById("k-cost").textContent = usd(s.cost);
-    document.getElementById("k-req").textContent = s.requests.toLocaleString("en-US") + (s.failed ? ` (+${s.failed} failed)` : "");
+    document.getElementById("k-req").textContent = s.requests.toLocaleString("en-US") + (s.failed ? ` (+${s.failed} failed attempts)` : "");
     document.getElementById("baseline").textContent = s.baseline;
     document.getElementById("usage-note").textContent = s.requests
       ? `Token counts came from the provider for ${s.usage_reported} of ${s.requests} requests; the rest were counted locally.` : "";

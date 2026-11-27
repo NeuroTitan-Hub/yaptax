@@ -183,7 +183,10 @@ def create_app(cfg: Config, store: Store | None = None, transport: httpx.AsyncBa
                                     obj = json.loads(chunk)
                                     usage = obj.get("usage") or usage
                                     for ch in obj.get("choices") or []:
-                                        parts.append((ch.get("delta") or {}).get("content") or "")
+                                        delta = ch.get("delta") or {}
+                                        for k in ("content", "reasoning", "reasoning_content"):
+                                            if isinstance(delta.get(k), str):
+                                                parts.append(delta[k])
                                 except json.JSONDecodeError:
                                     pass
                         yield (line + "\n").encode("utf-8")
@@ -218,6 +221,8 @@ def _answer_text(data) -> str:
     out = []
     for ch in data.get("choices") or []:
         msg = ch.get("message") or {}
-        if isinstance(msg.get("content"), str):
-            out.append(msg["content"])
+        # Thinking models bill their reasoning as output tokens too, so count it when we count ourselves.
+        for k in ("reasoning", "reasoning_content", "content"):
+            if isinstance(msg.get(k), str) and msg[k]:
+                out.append(msg[k])
     return "\n".join(out)
