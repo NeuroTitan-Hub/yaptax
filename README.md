@@ -48,7 +48,7 @@ That is `examples/support.jsonl`, ten short customer-support messages.
 Measuring is step one. The router is step two: an OpenAI-compatible endpoint that sends each request to the cheapest model you allow for its language, and shows what that saved.
 
 ```
-pip install "yaptax[router]"
+pip install "yaptax[router]"   # once released; until then: pip install "yaptax[router] @ git+https://github.com/NeuroTitan-Hub/yaptax"
 yaptax demo --open
 ```
 
