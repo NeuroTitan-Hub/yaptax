@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "yaptax"
-version = "0.2.0"
+version = "0.3.0"
 description = "Measure the language tax in your AI prompts: how many more tokens your non-English users cost."
 readme = "README.md"
 license = "MIT"
@@ -20,7 +20,8 @@ classifiers = [
 
 [project.optional-dependencies]
 hf = ["tokenizers>=0.19", "huggingface_hub>=0.23"]
-test = ["pytest>=7"]
+router = ["fastapi>=0.110", "uvicorn>=0.29", "httpx>=0.27", "tomli>=2; python_version < '3.11'"]
+test = ["pytest>=7", "fastapi>=0.110", "uvicorn>=0.29", "httpx>=0.27", "tomli>=2; python_version < '3.11'"]
 
 [project.urls]
 Homepage = "https://neurotitan.in/cost"
@@ -32,4 +33,4 @@ yaptax = "yaptax.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-yaptax = ["data/*.json"]
+yaptax = ["data/*.json", "router/*.json", "router/*.html"]

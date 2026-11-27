@@ -4,6 +4,8 @@
     yaptax measure chats.csv --lang-field lang   use your own language labels
     yaptax measure hindi.txt --lang hi --spend 2000
     yaptax ratios Tamil                          the Index's ratios for one language
+    yaptax demo                                  the router on a fake provider, with a live savings dashboard
+    yaptax router --config router.toml           the router in front of your real models (your own keys)
 
 Everything runs on your machine. Your text is never uploaded.
 """
@@ -13,6 +15,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -264,10 +267,23 @@ def main(argv: list[str] | None = None) -> int:
     r = sub.add_parser("ratios", help="show the Index's ratios for one language")
     r.add_argument("language", help="code like ta or tam_Taml, or a name like Tamil")
 
+    ro = sub.add_parser("router", help="run the router: an OpenAI-compatible endpoint that routes by language")
+    ro.add_argument("--config", required=True, help="router TOML file (see examples/router.toml)")
+    ro.add_argument("--host", default="127.0.0.1")
+    ro.add_argument("--port", type=int, default=8787)
+
+    de = sub.add_parser("demo", help="run the router against a fake provider and show the savings dashboard")
+    de.add_argument("--port", type=int, default=8787, help="router port; the fake provider uses port+1")
+    de.add_argument("--requests", type=int, default=34, help="demo requests to send (default %(default)s)")
+    de.add_argument("--no-serve", action="store_true", help="print the summary and exit")
+    de.add_argument("--open", action="store_true", help="open the dashboard in your browser")
+
     args = ap.parse_args(argv)
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(errors="replace")  # language names on consoles without UTF-8
+    if args.cmd in ("router", "demo"):
+        return _router_cmd(args)
     try:
         if args.cmd == "ratios":
             print_ratios(index.resolve(args.language))
@@ -285,4 +301,31 @@ def main(argv: list[str] | None = None) -> int:
         print()
     else:
         print_report(res, toks, args.spend)
+    return 0
+
+
+def _router_cmd(args) -> int:
+    try:
+        import uvicorn
+
+        from .router import config as rconfig
+        from .router import demo
+        from .router.server import create_app
+    except ImportError:
+        print("yaptax: the router needs extra packages: pip install 'yaptax[router]'", file=sys.stderr)
+        return 2
+    if args.cmd == "demo":
+        demo.run(port=args.port, requests=args.requests, serve=not args.no_serve, open_browser=args.open)
+        return 0
+    try:
+        cfg = rconfig.load(args.config)
+    except (OSError, rconfig.ConfigError) as e:
+        print(f"yaptax: {e}", file=sys.stderr)
+        return 2
+    missing = sorted({m.api_key_env for m in cfg.models.values() if m.api_key_env and not os.environ.get(m.api_key_env)})
+    if missing:
+        print(f"yaptax: warning: these key variables are not set: {', '.join(missing)}", file=sys.stderr)
+    print(f"yaptax router on http://{args.host}:{args.port}  (OpenAI base URL: http://{args.host}:{args.port}/v1, "
+          f"model 'yaptax-auto'; dashboard at /)")
+    uvicorn.run(create_app(cfg), host=args.host, port=args.port, log_level="warning")
     return 0

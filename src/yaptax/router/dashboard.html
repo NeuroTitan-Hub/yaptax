@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>yaptax router: savings</title>
+<style>
+  :root { --bg:#0f0f0f; --panel:#1a1a1a; --ink:#ece8e1; --ink2:#c2bdb5; --grey:#938f88; --rule:#2c2b29; --red:#e5574e; --green:#7fbf7a;
+          --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace; --sans: "IBM Plex Sans", system-ui, "Segoe UI", sans-serif; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans); }
+  .wrap { max-width:72rem; margin:0 auto; padding:2rem clamp(1rem,4vw,2.5rem) 4rem; }
+  header { display:flex; justify-content:space-between; align-items:baseline; gap:1rem; flex-wrap:wrap; }
+  .brand { font-family:var(--mono); letter-spacing:.08em; text-transform:uppercase; font-size:.8rem; color:var(--red); }
+  h1 { font-weight:420; font-size:clamp(2rem,5vw,3.2rem); margin:.4rem 0 0; letter-spacing:-.02em; }
+  .muted { color:var(--grey); }
+  .kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1rem; margin:2rem 0; }
+  .kpi { background:var(--panel); border:1px solid var(--rule); border-radius:.6rem; padding:1.1rem 1.2rem; }
+  .kpi .v { font-family:var(--mono); font-size:clamp(1.4rem,3vw,2.1rem); margin-top:.35rem; }
+  .kpi .v.save { color:var(--green); }
+  .label { font-family:var(--mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--grey); }
+  section { margin-top:2.2rem; }
+  table { width:100%; border-collapse:collapse; font-size:.9rem; }
+  th, td { text-align:left; padding:.55rem .6rem; border-bottom:1px solid var(--rule); vertical-align:middle; }
+  th { font-weight:600; color:var(--ink2); }
+  td.num, th.num { text-align:right; font-family:var(--mono); white-space:nowrap; }
+  .bar { position:relative; height:.7rem; background:var(--rule); border-radius:.2rem; min-width:8rem; }
+  .bar span { position:absolute; inset:0 auto 0 0; border-radius:.2rem; }
+  .bar .b { background:var(--grey); opacity:.55; }
+  .bar .c { background:var(--red); }
+  .pill { display:inline-block; font-family:var(--mono); font-size:.75rem; border:1px solid var(--rule); border-radius:99px; padding:.05rem .5rem; margin:.1rem .2rem .1rem 0; color:var(--ink2); }
+  .note { font-size:.85rem; color:var(--grey); max-width:52rem; line-height:1.5; }
+  .demo { margin-top:1.5rem; padding:.9rem 1.1rem; border:1px solid var(--red); border-radius:.6rem; color:var(--ink2); font-size:.9rem; line-height:1.5; }
+  .empty { padding:2rem; text-align:center; color:var(--grey); border:1px dashed var(--rule); border-radius:.6rem; }
+  code { font-family:var(--mono); background:var(--panel); padding:.1rem .35rem; border-radius:.3rem; }
+  @media (max-width:48rem) { .kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } .hide-sm { display:none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">yaptax router</div>
+      <h1>What routing saved you</h1>
+    </div>
+    <div class="muted" id="updated">Loading…</div>
+  </header>
+
+  <div id="demo" class="demo" hidden>
+    <strong>Demo.</strong> These requests went to a built-in fake provider, and every model has the same demo price,
+    so the saving shown comes only from how many tokens each model's tokenizer needs for each language. No real model
+    was called and nothing was paid.
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="label">Saved</div><div class="v save" id="k-saved">–</div></div>
+    <div class="kpi"><div class="label">Saved, share of baseline</div><div class="v save" id="k-pct">–</div></div>
+    <div class="kpi"><div class="label">Spent with yaptax</div><div class="v" id="k-cost">–</div></div>
+    <div class="kpi"><div class="label">Requests</div><div class="v" id="k-req">–</div></div>
+  </div>
+
+  <div id="empty" class="empty" hidden>
+    No requests yet. Point your OpenAI client at <code id="base"></code> with <code>model="yaptax-auto"</code>.
+  </div>
+
+  <section id="by-lang">
+    <div class="label">By language</div>
+    <table>
+      <thead><tr><th>Language</th><th class="num">Requests</th><th class="num hide-sm">Tokens</th><th>Cost vs baseline</th><th class="num">Saved</th><th class="hide-sm">Routed to</th></tr></thead>
+      <tbody id="langs"></tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="label">Latest requests</div>
+    <table>
+      <thead><tr><th>Time</th><th>Language</th><th>Model</th><th class="num hide-sm">Tokens in / out</th><th class="num">Cost</th><th class="num">Saved</th></tr></thead>
+      <tbody id="recent"></tbody>
+    </table>
+  </section>
+
+  <section>
+    <p class="note">
+      Savings are measured against your baseline model (<span id="baseline">–</span>): what each request would have cost
+      there, with its answer converted to the baseline's tokenizer using the Language Cost Index ratios. Costs use the
+      prices in your config. <span id="usage-note"></span> No prompt or answer text is stored.
+    </p>
+  </section>
+</div>
+<script>
+  const usd = (x) => {
+    const a = Math.abs(x);
+    const d = a === 0 ? 2 : a < 0.01 ? 6 : a < 1 ? 4 : 2;
+    return (x < 0 ? "-$" : "$") + a.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+  };
+  const pct = (x) => (x * 100).toFixed(1) + "%";
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+  document.getElementById("base").textContent = location.origin + "/v1";
+
+  async function refresh() {
+    let s;
+    try { s = await (await fetch("/stats", { cache: "no-store" })).json(); }
+    catch { document.getElementById("updated").textContent = "Router not reachable"; return; }
+    document.getElementById("updated").textContent = "Updated " + new Date().toLocaleTimeString();
+    document.getElementById("k-saved").textContent = usd(s.saved);
+    document.getElementById("k-pct").textContent = pct(s.saved_pct);
+    document.getElementById("k-cost").textContent = usd(s.cost);
+    document.getElementById("k-req").textContent = s.requests.toLocaleString("en-US") + (s.failed ? ` (+${s.failed} failed)` : "");
+    document.getElementById("baseline").textContent = s.baseline;
+    document.getElementById("usage-note").textContent = s.requests
+      ? `Token counts came from the provider for ${s.usage_reported} of ${s.requests} requests; the rest were counted locally.` : "";
+    document.getElementById("empty").hidden = s.requests > 0;
+    document.getElementById("demo").hidden = !s.demo;
+
+    const max = Math.max(1e-12, ...s.languages.map((l) => l.baseline_cost));
+    const langs = document.getElementById("langs");
+    langs.replaceChildren(...s.languages.map((l) => {
+      const tr = el("tr");
+      tr.append(el("td", null, `${l.name}`));
+      tr.append(el("td", "num", l.requests.toLocaleString("en-US")));
+      tr.append(el("td", "num hide-sm", l.tokens.toLocaleString("en-US")));
+      const td = el("td"); const bar = el("div", "bar");
+      const b = el("span", "b"); b.style.width = (l.baseline_cost / max * 100) + "%";
+      const c = el("span", "c"); c.style.width = (l.cost / max * 100) + "%";
+      bar.append(b, c); td.append(bar); tr.append(td);
+      tr.append(el("td", "num", `${usd(l.saved)} (${pct(l.saved_pct)})`));
+      const m = el("td", "hide-sm");
+      Object.entries(l.models).forEach(([k, v]) => m.append(el("span", "pill", `${k} ×${v}`)));
+      tr.append(m);
+      return tr;
+    }));
+
+    const recent = document.getElementById("recent");
+    recent.replaceChildren(...s.recent.map((r) => {
+      const tr = el("tr");
+      tr.append(el("td", null, new Date(r.ts * 1000).toLocaleTimeString()));
+      tr.append(el("td", null, r.name));
+      tr.append(el("td", null, r.status >= 400 ? `${r.model} (failed ${r.status})` : r.model + (r.fell_back ? " (fallback)" : "")));
+      tr.append(el("td", "num hide-sm", `${r.prompt_tokens} / ${r.completion_tokens}`));
+      tr.append(el("td", "num", usd(r.cost)));
+      tr.append(el("td", "num", usd(r.saved)));
+      return tr;
+    }));
+  }
+  refresh();
+  setInterval(refresh, 2000);
+</script>
+</body>
+</html>

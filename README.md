@@ -35,11 +35,56 @@ That is `examples/support.jsonl`, ten short customer-support messages.
 | `yaptax measure FILE --tokenizers o200k,qwen3` | Choose tokenizers (see below) |
 | `yaptax measure FILE --json` | Machine-readable output |
 | `yaptax ratios Tamil` | The Index's ratios for one language, on all 8 tokenizers |
+| `yaptax demo --open` | The router on a fake provider, with a live savings dashboard (needs `yaptax[router]`) |
+| `yaptax router --config router.toml` | The router in front of your real models, with your own keys |
 
 **Input:** `.jsonl`, `.json`, `.csv`, `.tsv`, or plain text with one prompt per line (`-` reads stdin).
 - Text is taken from a `text`, `prompt`, `content`, `input`, `message`, `query` or `question` field, or from chat `messages`. Use `--text-field` for another name.
 - Language is taken from a `lang`, `language` or `locale` field if there is one (`hi`, `hi-IN`, `hin_Deva` and `Hindi` all work). Use `--lang-field` for another name.
 - Without a label, the language is guessed from the writing system. All Devanagari is scored as Hindi, for example. Latin-script text is only scored as English if it looks like English; otherwise it is counted but not scored. Label your data for exact results.
+
+## yaptax Router: cut the tax automatically
+
+Measuring is step one. The router is step two: an OpenAI-compatible endpoint that sends each request to the cheapest model you allow for its language, and shows what that saved.
+
+```
+pip install "yaptax[router]"
+yaptax demo --open
+```
+
+`yaptax demo` runs the router against a built-in fake provider, sends 34 multilingual support messages through it and opens a live savings dashboard. Every model gets the same demo price, so the saving you see comes only from tokens. No real model is called and nothing is paid. On the demo set, routing saves 53% against sending every language to Qwen3:
+
+| Language | Routed to | Saved |
+|---|---|---|
+| Hindi | gpt-4o | 64% |
+| Tamil | gpt-4o | 68% |
+| Telugu | gpt-4o | 72% |
+| Thai | deepseek-v3 | 31% |
+| Arabic | mistral-nemo | 24% |
+| Amharic, English | qwen3 (baseline) | 0% |
+
+For real traffic, write a config with your models, your prices and your keys (see [`examples/router.toml`](examples/router.toml)), then:
+
+```
+yaptax router --config router.toml
+```
+
+```python
+from openai import OpenAI
+client = OpenAI(base_url="http://127.0.0.1:8787/v1", api_key="unused")
+reply = client.chat.completions.create(model="yaptax-auto", messages=[{"role": "user", "content": "मेरा ऑर्डर कहाँ है?"}])
+```
+
+How it decides:
+- **Language:** the `x-yaptax-lang` header if you send one; otherwise a guess from the user's text.
+- **Cost:** for each allowed model, input tokens on its tokenizer times its input price, plus an expected answer length on its tokenizer times its output price. OpenAI's tokenizers are counted exactly; others are estimated from the Language Cost Index. It picks the cheapest. On a tie it stays on your baseline.
+- **Pinning:** send a configured model name instead of `yaptax-auto` and the router uses that model, logging it like any other request.
+- **Safety:** per-language `allow`/`deny` rules (from an audit of answer quality). If the chosen model is down (5xx), it retries on your baseline.
+- **Accounting:** the actual cost uses the provider's reported usage. The baseline cost is an estimate of the same request on your baseline, with the answer converted to its tokenizer using the Index ratios.
+- **Privacy:** the log keeps language, models, token counts, costs and timing. No prompt or answer text, and keys stay in your environment.
+- **Endpoints:** `POST /v1/chat/completions` (streaming supported), `GET /v1/models`, `GET /stats`, and the dashboard at `/`.
+
+What it doesn't do yet: judge answer quality by itself (use per-language rules), or route by latency.
 
 ## Tokenizers
 

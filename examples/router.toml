@@ -1,0 +1,41 @@
+# yaptax router config. Run:  yaptax router --config router.toml
+# Then point any OpenAI client at http://127.0.0.1:8787/v1 with model="yaptax-auto".
+#
+# Prices: copy them from each provider's pricing page (USD per 1M tokens). yaptax ships no prices on purpose:
+# they change, and the router refuses to start while a price is 0.
+# Keys: put each key in the environment variable named by api_key_env. The config never holds a key.
+
+baseline = "gpt-4o"            # what you use today for every language; savings are measured against it
+expected_output_tokens = 300   # typical answer length in English tokens; only used to rank models
+database = "yaptax-router.db"  # request log (no prompt or answer text is stored)
+
+[[models]]
+name = "gpt-4o"
+base_url = "https://api.openai.com/v1"
+api_key_env = "OPENAI_API_KEY"
+tokenizer = "o200k"
+input_per_million = 0.0    # set from the provider's pricing page
+output_per_million = 0.0   # set from the provider's pricing page
+
+[[models]]
+name = "deepseek"
+upstream_model = "deepseek-chat"
+base_url = "https://api.deepseek.com/v1"
+api_key_env = "DEEPSEEK_API_KEY"
+tokenizer = "deepseek-v3"  # check which tokenizer the provider's current model uses
+input_per_million = 0.0
+output_per_million = 0.0
+
+[[models]]
+name = "qwen"
+upstream_model = "qwen3"            # e.g. a self-hosted vLLM or Ollama server (OpenAI-compatible)
+base_url = "http://localhost:8000/v1"
+tokenizer = "qwen3"
+input_per_million = 0.0             # for self-hosting, your cost per 1M tokens on your own hardware
+output_per_million = 0.0
+
+# Per-language rules, ideally from an audit of answer quality. Without rules, every model is allowed.
+# [languages.hin_Deva]
+# allow = ["gpt-4o", "deepseek"]
+# [languages.amh_Ethi]
+# deny = ["deepseek"]

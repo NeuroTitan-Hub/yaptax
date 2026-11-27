@@ -1,0 +1,73 @@
+{
+ "note": "Short customer-support messages written by NeuroTitan Labs for the yaptax demo. Not real customer data.",
+ "prompts": [
+  {
+   "lang": "hi",
+   "text": "मेरे ऑर्डर के लिए मुझसे दो बार पैसे काटे गए। क्या आप एक भुगतान वापस कर सकते हैं?"
+  },
+  {
+   "lang": "hi",
+   "text": "जो ऑर्डर पहले ही भेजा जा चुका है, उसका डिलीवरी पता कैसे बदलूँ?"
+  },
+  {
+   "lang": "hi",
+   "text": "मेरा पासवर्ड काम नहीं कर रहा है। कृपया मेरा खाता खोलने में मदद करें।"
+  },
+  {
+   "lang": "ta",
+   "text": "என் ஆர்டருக்கு இரண்டு முறை பணம் எடுக்கப்பட்டது. ஒரு கட்டணத்தைத் திருப்பித் தர முடியுமா?"
+  },
+  {
+   "lang": "ta",
+   "text": "என் பொருள் இன்னும் வரவில்லை. அது எப்போது வரும்?"
+  },
+  {
+   "lang": "bn",
+   "text": "আমার অর্ডারের জন্য দুবার টাকা কাটা হয়েছে। আপনি কি একটি পেমেন্ট ফেরত দিতে পারবেন?"
+  },
+  {
+   "lang": "bn",
+   "text": "আমার পণ্য এখনও আসেনি। কবে আসবে?"
+  },
+  {
+   "lang": "te",
+   "text": "నా ఆర్డర్ కోసం రెండుసార్లు డబ్బు తీసుకున్నారు. ఒక చెల్లింపును తిరిగి ఇవ్వగలరా?"
+  },
+  {
+   "lang": "mr",
+   "text": "माझ्या ऑर्डरसाठी माझ्याकडून दोनदा पैसे घेतले गेले. तुम्ही एक पेमेंट परत करू शकता का?"
+  },
+  {
+   "lang": "ar",
+   "text": "تم خصم المبلغ مرتين على طلبي. هل يمكنكم استرداد إحدى الدفعتين؟"
+  },
+  {
+   "lang": "es",
+   "text": "Me cobraron dos veces por mi pedido. ¿Pueden devolverme uno de los pagos?"
+  },
+  {
+   "lang": "es",
+   "text": "¿Cómo cambio la dirección de entrega de un pedido que ya fue enviado?"
+  },
+  {
+   "lang": "pt",
+   "text": "Fui cobrado duas vezes pelo meu pedido. Vocês podem reembolsar um dos pagamentos?"
+  },
+  {
+   "lang": "am",
+   "text": "ለትዕዛዜ ሁለት ጊዜ ተከፍያለሁ። አንዱን ክፍያ መመለስ ትችላላችሁ?"
+  },
+  {
+   "lang": "th",
+   "text": "ฉันถูกเรียกเก็บเงินสองครั้งสำหรับคำสั่งซื้อของฉัน คุณช่วยคืนเงินหนึ่งรายการได้ไหม"
+  },
+  {
+   "lang": "en",
+   "text": "I was charged twice for my order. Can you refund one of the payments?"
+  },
+  {
+   "lang": "en",
+   "text": "How do I change the delivery address for an order that has already shipped?"
+  }
+ ]
+}
