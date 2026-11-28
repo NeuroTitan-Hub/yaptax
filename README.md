@@ -34,6 +34,7 @@ That is `examples/support.jsonl`, ten short customer-support messages.
 | `yaptax measure FILE --lang hi` | Treat every record as one language |
 | `yaptax measure FILE --tokenizers o200k,qwen3` | Choose tokenizers (see below) |
 | `yaptax measure FILE --json` | Machine-readable output |
+| `yaptax check FILE --spend 2000 --out check.md` | Short markdown Language Cost Check: tokens per language, language tax, fewest-token tokenizer per language, rough savings range. First tokenizer in `--tokenizers` is the model you use today |
 | `yaptax ratios Tamil` | The Index's ratios for one language, on all 8 tokenizers |
 | `yaptax demo --open` | The router on a fake provider, with a live savings dashboard (needs `yaptax[router]`) |
 | `yaptax router --config router.toml` | The router in front of your real models, with your own keys |

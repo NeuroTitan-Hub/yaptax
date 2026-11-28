@@ -3,6 +3,7 @@
     yaptax measure prompts.jsonl                 tokens per language, and how many are language tax
     yaptax measure chats.csv --lang-field lang   use your own language labels
     yaptax measure hindi.txt --lang hi --spend 2000
+    yaptax check prompts.jsonl --spend 2000      a short markdown Language Cost Check you can share
     yaptax ratios Tamil                          the Index's ratios for one language
     yaptax demo                                  the router on a fake provider, with a live savings dashboard
     yaptax router --config router.toml           the router in front of your real models (your own keys)
@@ -21,7 +22,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Iterable, Iterator
 
-from . import __version__, detect, index, tokenizers
+from . import __version__, check, detect, index, tokenizers
 
 TEXT_FIELDS = ("text", "prompt", "content", "input", "message", "query", "question")
 LANG_FIELDS = ("lang", "language", "locale")
@@ -264,6 +265,18 @@ def main(argv: list[str] | None = None) -> int:
     m.add_argument("--spend", type=float, help="your monthly API spend for this traffic, to show the tax in money")
     m.add_argument("--json", action="store_true", help="print machine-readable JSON")
 
+    c = sub.add_parser("check", help="measure, then write a short markdown Language Cost Check")
+    c.add_argument("file", help=".jsonl, .json, .csv, .tsv or text (one prompt per line); - for stdin")
+    c.add_argument("--tokenizers", default=",".join(tokenizers.DEFAULT),
+                   help="comma-separated; the first is the model you use today, the rest are the candidates "
+                        f"(from: {', '.join(tokenizers.AVAILABLE)}; default: %(default)s)")
+    c.add_argument("--text-field", help="field holding the text")
+    c.add_argument("--lang-field", help="field holding the language")
+    c.add_argument("--lang", help="treat every record as this language")
+    c.add_argument("--spend", type=float, help="your monthly API spend for this traffic, for a rough savings range")
+    c.add_argument("--title", help="heading of the report (default: Language Cost Check)")
+    c.add_argument("--out", help="write the markdown to this file instead of printing it")
+
     r = sub.add_parser("ratios", help="show the Index's ratios for one language")
     r.add_argument("language", help="code like ta or tam_Taml, or a name like Tamil")
 
@@ -289,6 +302,8 @@ def main(argv: list[str] | None = None) -> int:
             print_ratios(index.resolve(args.language))
             return 0
         toks = [t.strip() for t in args.tokenizers.split(",") if t.strip()]
+        if not toks:
+            raise KeyError("--tokenizers needs at least one tokenizer")
         res = measure(read_records(args.file, args.text_field, args.lang_field), toks, args.lang)
     except (KeyError, tokenizers.TokenizerUnavailable, FileNotFoundError) as e:
         print(f"yaptax: {e.args[0] if e.args else e}", file=sys.stderr)
@@ -296,6 +311,14 @@ def main(argv: list[str] | None = None) -> int:
     if not res["languages"]:
         print("yaptax: no text found in the input", file=sys.stderr)
         return 1
+    if args.cmd == "check":
+        md = check.render(res, toks, args.spend, args.title)
+        if args.out:
+            Path(args.out).write_text(md, encoding="utf-8")
+            print(f"yaptax: wrote {args.out}", file=sys.stderr)
+        else:
+            print(md)
+        return 0
     if args.json:
         json.dump(res, sys.stdout, ensure_ascii=False, indent=2)
         print()
