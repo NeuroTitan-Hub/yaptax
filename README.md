@@ -86,6 +86,17 @@ How it decides:
 
 What it doesn't do yet: judge answer quality by itself (use per-language rules), or route by latency.
 
+## Free Language Cost Check
+
+Want this number for your own product? We run a free one-week Language Cost Check for teams that serve users outside English.
+
+- **What you get:** tokens per language on the model you use today and three alternatives, how much of your bill is language tax, a rough savings range, and a 20-minute call.
+- **What to send:** 20 to 500 real prompts, with names, phone numbers, emails and IDs removed first. Tell us which models you use and roughly what you spend a month.
+- **What happens to them:** we measure them on our own machines and delete them after we send you the result. The numbers stay with you; no prompt text is kept.
+- **How to ask:** open a GitHub issue titled "Language Cost Check" in this repository. **Do not paste prompts into the issue, it is public.** Tell us your languages and models. We will reply there with how to send the prompts privately.
+
+You can also run the same measurement yourself with `yaptax measure`. Nothing leaves your machine.
+
 ## Tokenizers
 
 | ID | Used by | Needs |
